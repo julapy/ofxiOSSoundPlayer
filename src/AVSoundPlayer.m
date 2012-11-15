@@ -6,6 +6,11 @@
 
 #import "AVSoundPlayer.h"
 
+@interface AVSoundPlayer() {
+    BOOL bMultiPlay;
+}
+@end
+
 @implementation AVSoundPlayer
 
 @synthesize delegate;
@@ -15,7 +20,7 @@
 - (id)init {
     self = [super init];
     if(self) {
-        //
+        bMultiPlay = NO;
     }
     return self;
 }
@@ -39,9 +44,12 @@
 }
 
 - (BOOL)loadWithURL:(NSURL*)url {
+    [self unloadSound];
+    
     NSError * error = nil;
-    self.player = [[[AVAudioPlayer alloc] initWithContentsOfURL:url 
+    self.player = [[[AVAudioPlayer alloc] initWithContentsOfURL:url
                                                           error:&error] autorelease];
+    [self.player setEnableRate:YES];
     [self.player prepareToPlay];
     if(error) {
         if([self.delegate respondsToSelector:@selector(soundPlayerError:)]) {
@@ -55,13 +63,17 @@
 }
 
 - (void)unloadSound {
-    [self stop:NO];
+    [self stop];
     self.player.delegate = nil;
     self.player = nil;
 }
 
 //----------------------------------------------------------- play / pause / stop.
 - (void)play {
+    if([self isPlaying]) {
+        [self position:0];
+        return;
+    }
     BOOL bOk = [self.player play];
     if(bOk) {
         [self startTimer];
@@ -70,86 +82,100 @@
 
 - (void)pause {
     [self.player pause];
-}
-
-- (void)stop:(BOOL)fade {
-    if (fade) {
-        [self doVolumeFade];
-    } else {
-        [self.player stop];
-    }
     [self stopTimer];
 }
 
-- (void)doVolumeFade {  
-    if (self.player.volume > 0.1) {
-        self.player.volume = self.player.volume - 0.1;
-        [self performSelector:@selector(doVolumeFade) withObject:nil afterDelay:0.1];           
-    } else {
-        // Stop and get the sound ready for playing again
-        [self.player stop];
-        self.player.currentTime = 0;
-        [self.player prepareToPlay];
-        self.player.volume = 1.0;
-    }
+- (void)stop {
+    [self.player stop];
+    [self stopTimer];
 }
 
 //----------------------------------------------------------- states.
 - (BOOL)isLoaded {
-    return NO;
+    return (self.player != nil);
 }
 
 - (BOOL)isPlaying {
-    return NO;
+    if(self.player == nil) {
+        return NO;
+    }
+    return self.player.isPlaying;
 }
 
 //----------------------------------------------------------- properties.
 - (void)volume:(float)value {
-    //
+    self.player.volume = value;
 }
 
 - (float)volume {
-    return 0;
+    if(self.player == nil) {
+        return 0;
+    }
+    return self.player.volume;
 }
 
 - (void)pan:(float)value {
-    //
+    self.player.pan = value;
 }
 
 - (float)pan {
-    return 0;
+    if(self.player == nil) {
+        return 0;
+    }
+    return self.player.pan;
 }
 
 - (void)speed:(float)value {
-    //
+    self.player.rate = value;
 }
 
 - (float)speed {
-    return 0;
+    if(self.player == nil) {
+        return 0;
+    }
+    return self.player.rate;
 }
 
-- (void)loop:(BOOL)value {
-    //
+- (void)loop:(BOOL)bLoop {
+    if(bLoop) {
+        self.player.numberOfLoops = -1;
+    } else {
+        self.player.numberOfLoops = 0;
+    }
 }
 
 - (BOOL)loop {
-    return NO;
+    return self.player.numberOfLoops < 0;
 }
 
 - (void)multiPlay:(BOOL)value {
-    //
+    bMultiPlay = value;
 }
 
 - (BOOL)multiPlay {
-    return NO;
+    return bMultiPlay;
 }
 
 - (void)position:(float)value {
-    //
+    self.player.currentTime = value * self.player.duration;
 }
 
 - (float)position {
-    return 0;
+    if(self.player == nil) {
+        return 0;
+    }
+    return self.player.currentTime / (float)self.player.duration;
+}
+
+- (void)positionMs:(int)value {
+    self.player.currentTime = value / 1000.0;
+}
+
+- (int)positionMs {
+    if(self.player == nil) {
+        return 0;
+    }
+    return self.player.currentTime * 1000;
 }
 
 //----------------------------------------------------------- timer.

@@ -29,7 +29,7 @@
 
 - (void)play;
 - (void)pause;
-- (void)stop:(BOOL)fade;
+- (void)stop;
 
 - (BOOL)isLoaded;
 - (BOOL)isPlaying;
@@ -51,5 +51,8 @@
 
 - (void)position:(float)value;
 - (float)position;
+
+- (void)positionMs:(int)value;
+- (int)positionMs;
 
 @end

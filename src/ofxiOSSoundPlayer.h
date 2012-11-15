@@ -39,4 +39,8 @@ public:
     bool isLoaded();
     float getVolume();
     
+protected:
+    
+    void * soundPlayer;
+    
 };
