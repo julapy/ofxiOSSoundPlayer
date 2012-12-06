@@ -126,6 +126,11 @@
 }
 
 - (void)speed:(float)value {
+    if(value < 0.5) { // min play speed is 0.5 and max speed is 2.0 as per apple docs.
+        value = 0.5;
+    } else if(value > 2.0) {
+        value = 2.0;
+    }
     self.player.rate = value;
 }
 
