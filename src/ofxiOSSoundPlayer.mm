@@ -22,8 +22,9 @@ bool ofxiOSSoundPlayer::loadSound(string fileName, bool stream) {
         unloadSound();
     }
 
+    string filePath = ofToDataPath(fileName);
     soundPlayer = [[AVSoundPlayer alloc] init];
-    BOOL bOk = [(AVSoundPlayer *)soundPlayer loadWithFile:[NSString stringWithUTF8String:fileName.c_str()]];
+    BOOL bOk = [(AVSoundPlayer *)soundPlayer loadWithPath:[NSString stringWithUTF8String:filePath.c_str()]];
     
     return bOk;
 }
