@@ -49,7 +49,9 @@
     NSError * error = nil;
     self.player = [[[AVAudioPlayer alloc] initWithContentsOfURL:url
                                                           error:&error] autorelease];
-    [self.player setEnableRate:YES];
+    if([self.player respondsToSelector:@selector(setEnableRate:)]) {
+        [self.player setEnableRate:YES];
+    }
     [self.player prepareToPlay];
     if(error) {
         if([self.delegate respondsToSelector:@selector(soundPlayerError:)]) {
